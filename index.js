@@ -1,3 +1,5 @@
+"use strict";
+
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = '1';
 
 process.on('uncaughtException', function(err) {
@@ -6,7 +8,7 @@ process.on('uncaughtException', function(err) {
 
 // To see console.log output run with `DEBUGCONTROL=true electron .` or set environment variable for DEBUGCONTROL=true
 // debug_log debug overhead
-DEBUG = false;
+var DEBUG = false;
 if (process.env.DEBUGCONTROL) {
   DEBUG = true;
   console.log("Console Debugging Enabled")
@@ -35,8 +37,9 @@ var app = express();
 var http = require("http").Server(app);
 var https = require('https');
 
-var ioServer = require('socket.io');
-var io = new ioServer();
+//var ioServer = require('socket.io');
+//var io = new ioServer();
+const io = require('socket.io')(http);
 var safetosend;
 
 var fs = require('fs');
@@ -48,7 +51,6 @@ require('hazardous');
 
 app.use(express.static(path.join(__dirname, "app")));
 //app.use(express.limit('200M'));
-
 
 // Interface firmware flash
 app.post('/uploadCustomFirmware', (req, res) => {
@@ -131,7 +133,6 @@ var appIcon = null,
   jogWindow = null,
   mainWindow = null
 var autoUpdater
-
 
 var updateIsDownloading = false;
 if (isElectron()) {
@@ -288,7 +289,6 @@ function checkPowerSettings() {
   }
 }
 
-
 var oldportslist;
 var oldpinslist;
 const iconPath = path.join(__dirname, 'app/icon.png');
@@ -298,6 +298,7 @@ const iconStop = path.join(__dirname, 'app/icon-stop.png');
 const iconPause = path.join(__dirname, 'app/icon-pause.png');
 const iconAlarm = path.join(__dirname, 'app/icon-bell.png');
 
+var port;
 var iosocket;
 var lastCommand = false
 var gcodeQueue = [];
@@ -425,7 +426,6 @@ var status = {
   }
 };
 
-
 async function findPorts() {
   const ports = await SerialPort.list()
   // console.log(ports)
@@ -469,7 +469,6 @@ checkPowerSettings()
 // var PowerSettingsInterval = setInterval(function() {
 //   checkPowerSettings()
 // }, 60 * 1000)
-
 
 // JSON API
 app.get('/api/version', (req, res) => {
@@ -529,7 +528,6 @@ app.get('/workspace', (req, res) => {
 
 // http-post version of runJob
 
-
 app.post('/runjob', (req, res) => {
   // 'firmwareBin' is the name of our file input field in the HTML form
   let upload = multer({
@@ -559,7 +557,6 @@ app.post('/runjob', (req, res) => {
 
   });
 });
-
 
 // File Post
 app.post('/upload', function(req, res) {
@@ -629,12 +626,11 @@ io.on("connection", function(socket) {
 
   iosocket = socket;
 
-
   if (status.machine.firmware.type == 'grbl') {
 
     // handle Grbl RESET external input
     if (status.machine.inputs.length > 0) {
-      for (i = 0; i < status.machine.inputs.length; i++) {
+      for (var i = 0; i < status.machine.inputs.length; i++) {
         switch (status.machine.inputs[i]) {
           case 'R':
             // debug_log('PIN: SOFTRESET');
@@ -669,8 +665,6 @@ io.on("connection", function(socket) {
     //   }
     // }
   }, 50);
-
-
 
   socket.on("openbuilds", function(data) {
     const {
@@ -713,7 +707,6 @@ io.on("connection", function(socket) {
     } = require('electron')
     shell.openExternal('https://cam.openbuilds.com')
   });
-
 
   socket.on("opendocs", function(data) {
     const {
@@ -923,7 +916,7 @@ io.on("connection", function(socket) {
         baudRate: parseInt(data[2])
       });
 
-      parser = port.pipe(new Readline({
+      var parser = port.pipe(new Readline({
         delimiter: '\r\n'
       }));
 
@@ -951,7 +944,6 @@ io.on("connection", function(socket) {
         }
 
       });
-
 
       port.on("open", function() {
         debug_log("PORT INFO: Connected to " + port.path + " at " + port.baudRate);
@@ -1039,7 +1031,6 @@ io.on("connection", function(socket) {
           }, config.firmwareWaitTime * 1000);
         }
 
-
         status.comms.connectionStatus = 2;
         status.comms.interfaces.activePort = port.path;
         status.comms.interfaces.activeBaud = port.baudRate;
@@ -1060,7 +1051,6 @@ io.on("connection", function(socket) {
         //console.log(data)
         var command = sentBuffer[0];
 
-
         if (data.indexOf("<") != 0) {
           debug_log('data:', data)
         }
@@ -1078,7 +1068,7 @@ io.on("connection", function(socket) {
           var grblOpt;
           if (startOpt > 4) {
             var grblOptLen = data.substr(startOpt).search(/]/);
-            grblOpts = data.substr(startOpt, grblOptLen).split(/,/);
+            var grblOpts = data.substr(startOpt, grblOptLen).split(/,/);
 
             status.machine.firmware.blockBufferSize = grblOpts[1];
             status.machine.firmware.rxBufferSize = grblOpts[2];
@@ -1371,10 +1361,6 @@ io.on("connection", function(socket) {
           }
         }
 
-
-
-
-
         if (command) {
           command = command.replace(/(\r\n|\n|\r)/gm, "");
           // debug_log("CMD: " + command + " / DATA RECV: " + data.replace(/(\r\n|\n|\r)/gm, ""));
@@ -1410,7 +1396,6 @@ io.on("connection", function(socket) {
   socket.on('saveToSd', function(datapack) {
     saveToSd(datapack);
   });
-
 
   socket.on('setqueuePointer', function(data) {
     debug_log('Setting queuePointer to ' + data)
@@ -1633,7 +1618,7 @@ io.on("connection", function(socket) {
   });
 
   socket.on('feedOverride', function(data) {
-    debug_log(data)
+    debug_log('feedOverride' + data)
     if (status.comms.connectionStatus > 0) {
       switch (status.machine.firmware.type) {
         case 'grbl':
@@ -1912,7 +1897,7 @@ function readFile(filePath) {
 }
 
 function machineSend(gcode, realtime) {
-  debug_log("SENDING: " + gcode)
+  //debug_log("SENDING: " + gcode)
   if (port.isOpen) {
     if (realtime) {
       // realtime commands doesnt count toward the queue, does not generate OK
@@ -1960,7 +1945,6 @@ function runJob(object) {
     jobCompletedMsg = object.completedMsg
   }
 
-
   // debug_log('Run Job (' + data.length + ')');
   if (status.comms.connectionStatus > 0) {
     if (data) {
@@ -2004,7 +1988,7 @@ function stopPort() {
 }
 
 function parseFeedback(data) {
-  debug_log(data)
+  //debug_log(data)
   var state = data.substring(1, data.search(/(,|\|)/));
   status.comms.runStatus = state
   if (state == "Alarm") {
@@ -2115,7 +2099,6 @@ function parseFeedback(data) {
       }
       // end if MPOS
     }
-
   }
   // Extract override values (for Grbl > v1.1 only!)
   var startOv = data.search(/ov:/i) + 3;
@@ -2151,7 +2134,7 @@ function parseFeedback(data) {
   var startF = data.search(/\|F:/i) + 3;
   if (startF > 3) {
     var f = data.replace(">", "").substr(startF).split(/,|\|/);
-    console.log(JSON.stringify(f, null, 4))
+    //console.log(JSON.stringify(f, null, 4))
     if (Array.isArray(f)) {
       if (f[0]) {
         status.machine.overrides.realFeed = parseInt(f[0]);
@@ -2231,7 +2214,7 @@ function gotModals(data) {
 
   data = data.split(/:|\[|\]/)[2].split(" ")
 
-  for (i = 0; i < data.length; i++) {
+  for (var i = 0; i < data.length; i++) {
     if (data[i] == "G0") {
       status.machine.modals.motionmode = "G0";
     }
@@ -2441,7 +2424,6 @@ function BufferSpace(firmware) {
   }
 }
 
-
 function send1Q() {
   // console.time('send1Q');
   var gcode;
@@ -2577,8 +2559,6 @@ if (isElectron()) {
         }
       }
 
-
-
     })
     // Create myWindow, load the rest of the app, etc...
     app.on('ready', () => {})
@@ -2617,7 +2597,6 @@ if (isElectron()) {
           jogWindow.setAlwaysOnTop(false);
         }
       }
-
     }
 
     function createMenu() {
@@ -2889,7 +2868,6 @@ if (isElectron()) {
   }
 }
 
-
 function stop(data) {
   //data = { stop: false, jog: false, abort: true}
   if (status.comms.connectionStatus > 0) {
@@ -3008,7 +2986,7 @@ function startChrome() {
     const chrome = spawn('chromium-browser', ['-app=http://127.0.0.1:3000']);
     chrome.on('close', (code) => {
       debug_log(`Chromium process exited with code ${code}`);
-      process.exit(0);
+      //process.exit(0);
     });
   } else {
     debug_log('Not a Raspberry Pi. Please use Electron Instead');
@@ -3016,7 +2994,6 @@ function startChrome() {
 }
 
 // Interface Programming
-
 
 // grab latest firmware.bin for Interface on startup
 
@@ -3060,12 +3037,9 @@ https.get("https://raw.githubusercontent.com/OpenBuilds/firmware/main/interface/
 
       req.end()
 
-
     });
   });
 })
-
-
 
 var firmwareImagePath = path.join(uploadsDir, './firmware.bin');
 var spawn = require('child_process').spawn;
@@ -3086,7 +3060,6 @@ function flashInterface(data) {
   var port = data.port;
   var file = data.file;
   var board = data.board
-
 
   console.log("Flashing Interface on " + port + " with board " + board + " file: " + file)
   // var data = {
@@ -3128,9 +3101,6 @@ function flashInterface(data) {
     var child = spawn(path.join(__dirname, "./esptool.exe"), esptool_opts);
   }
 
-
-
-
   child.stdout.on('data', function(data) {
     var debugString = data.toString();
     console.log(debugString)
@@ -3167,6 +3137,5 @@ function flashInterface(data) {
   });
 }
 // end Interface Programming
-
 
 process.on('exit', () => debug_log('exit'))
