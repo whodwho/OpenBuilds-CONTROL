@@ -39,7 +39,8 @@ function showAndHideSplash() {
 function getChangelog() {
 
   // Splash Screen Begin
-  $("#splashAd").html(`<img src="http://openbuilds.com/uploadfiles/control/splash.png?date=` + new Date().getTime() + `" onerror="this.onerror=null;this.src='splashicon.png';showAndHideSplash()" style="display:block; margin:auto;" onload="showAndHideSplash()" />`)
+  //$("#splashAd").html(`<img src="http://openbuilds.com/uploadfiles/control/splash.png?date=` + new Date().getTime() + `" onerror="this.onerror=null;this.src='splashicon.png';showAndHideSplash()" style="display:block; margin:auto;" onload="showAndHideSplash()" />`)
+  $("#splashAd").html(`<img src="img/interface/interf.png" onerror="this.onerror=null;this.src='splashicon.png';showAndHideSplash()" style="display:block; margin:auto;" onload="showAndHideSplash()" />`)
 
   $("#changelog").empty()
   var template2 = `<ul>`

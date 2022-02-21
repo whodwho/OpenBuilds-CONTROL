@@ -859,7 +859,47 @@ function selectMachine(type) {
       $131: "1000", //"Y-axis maximum travel, millimeters"
       $132: "100", //"Z-axis maximum travel, millimeters"
     }
+  }else if (type == "benchmill") {
+    // Leadmachine 55
+    var customFirmware = false;
+    var grblParams_def = {
+      $0: "10", //"Step pulse time, microseconds"
+      $1: "25", //"Step idle delay, milliseconds"
+      $2: "0", //"Step pulse invert, mask"
+      $3: "0", //"Step direction invert, mask"
+      $4: "0", //"Invert step enable pin, boolean"
+      $5: "0", //"Invert limit pins, boolean"
+      $6: "0", //"Invert probe pin, boolean"
+      $10: "1", //"Status report options, mask"
+      $11: "0.010", //"Junction deviation, millimeters"
+      $12: "0.002", //"Arc tolerance, millimeters"
+      $13: "0", //"Report in inches, boolean"
+      $20: "1", //"Soft limits enable, boolean"
+      $21: "0", //"Hard limits enable, boolean"
+      $22: "1", //"Homing cycle enable, boolean"
+      $23: "1", //"Homing direction invert, mask"
+      $24: "25.000", //"Homing locate feed rate, mm/min"
+      $25: "500.000", //"Homing search seek rate, mm/min"
+      $26: "250", //"Homing switch debounce delay, milliseconds"
+      $27: "1.000", //"Homing switch pull-off distance, millimeters"
+      $30: "1000", //"Maximum spindle speed, RPM"
+      $31: "0", //"Minimum spindle speed, RPM"
+      $32: "0", //"Laser mode"
+      $100: "320.450", //"X-axis steps per millimeter"
+      $101: "320.800", //"Y-axis steps per millimeter"
+      $102: "160.100", //"Z-axis steps per millimeter"
+      $110: "2000.000", //"X-axis maximum rate, mm/min"
+      $111: "1500.000", //"Y-axis maximum rate, mm/min"
+      $112: "500.000", //"Z-axis maximum rate, mm/min"
+      $120: "10.000", //"X-axis acceleration, mm/sec^2"
+      $121: "10.000", //"Y-axis acceleration, mm/sec^2"
+      $122: "10.000", //"Z-axis acceleration, mm/sec^2"
+      $130: "232", //"X-axis maximum travel, millimeters"
+      $131: "100", //"Y-axis maximum travel, millimeters"
+      $132: "280", //"Z-axis maximum travel, millimeters"
+    }
   }
+
   for (var key in grblParams_def) {
     if (grblParams_def.hasOwnProperty(key)) {
       var j = key.substring(1)
@@ -987,6 +1027,9 @@ function setMachineButton(type) {
     overlaytype = type;
   } else if (type == "leadmachine1515") {
     template = `<img src="img/mch/` + type + `.png"/>  OpenBuilds LEAD 1515`
+    overlaytype = type;
+  } else if (type == "benchmill") {
+    template = `<img src="img/mch/` + type + `.png"/>  Bench Mill`
     overlaytype = type;
   } else if (type == "custom") {
     template = `<img src="img/mch/` + type + `.png"/>  Custom Machine`
